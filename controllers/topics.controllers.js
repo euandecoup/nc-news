@@ -2,10 +2,10 @@ const { selectAllTopics } = require("../models/topics.models")
 
 function getTopics(request, response) {
     selectAllTopics()
-    .then((topics)=>{
+    .then((topics) => {
         response.status(200).send({topics})
     })
-    .catch((error)=>{
+    .catch((error) => {
         next(error)
     })
 }
