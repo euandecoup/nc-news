@@ -90,7 +90,6 @@ describe('App', ()=>{
             .get('/api/articles/1')
             .expect(200)
             .then(({body}) => {
-                console.log(body);
                 expect(body.article).toMatchObject({
                     author: 'butter_bridge',
                     title: 'Living in the shadow of a great man',
