@@ -84,4 +84,41 @@ describe('App', ()=>{
         });
     });
 
+    describe('GET /api/articles/:article_id', () => {
+        test('GET 200: should return an article object with the correct properties', () => {
+            return request(app)
+            .get('/api/articles/1')
+            .expect(200)
+            .then(({body}) => {
+                expect(body.article).toMatchObject({
+                    author: 'butter_bridge',
+                    title: 'Living in the shadow of a great man',
+                    article_id: 1,
+                    body: 'I find this existence challenging',
+                    topic: 'mitch',
+                    created_at: expect.any(String),
+                    votes: 100,
+                    article_img_url: expect.any(String)
+                })
+            })
+        });
+        test('GET 404: should return 404 if article not found', () => {
+            return request(app)
+            .get('/api/articles/10000')
+            .expect(404)
+            .then((response) => {
+                const error = response.body
+                expect(error.msg).toBe('article not found')
+            })
+        })
+        test('GET 400: should return 400 for invalid article id', () => {
+            return request(app)
+            .get('/api/articles/invalid_id')
+            .expect(400)
+            .then((response) => {
+                const error = response.body
+                expect(error.msg).toBe('bad request')
+            })
+        });
+    })
 })
