@@ -1,13 +1,8 @@
-const { selectAllApis } = require("../models/api.models")
+const endpoints = require('../endpoints.json')
+
 
 function getApis(request, response, next) {
-    selectAllApis()
-    .then((apis)=>{
-        response.status(200).send({apis})
-    })
-    .catch((error) => {
-        next(error)
-    })
+        response.status(200).send(endpoints)
 }
 
 module.exports = { getApis }

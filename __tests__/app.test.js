@@ -3,13 +3,14 @@ const app  = require('../app.js')
 const seed = require('../db/seeds/seed.js')
 const data = require('../db/data/test-data/index.js')
 const db = require('../db/connection.js')
+const expectedApiResponse = require('../endpoints.json')
 
 beforeEach(()=>{
     return seed(data)
 })
 
 afterAll(()=>{
-    db.end()
+    return db.end()
 })
 
 describe('App', ()=>{
@@ -49,38 +50,7 @@ describe('App', ()=>{
             .get('/api')
             .expect(200)
             .then(({body}) => {
-                expect(body.apis).toHaveProperty('GET /api/topics')
-                expect(body.apis).toHaveProperty('GET /api/articles')
-                expect(body.apis['GET /api/topics']).toMatchObject({
-                    description: expect.any(String),
-                    queries: expect.any(Array),
-                    exampleResponse: {
-                        topics: expect.arrayContaining([
-                            {
-                                slug: expect.any(String),
-                                description: expect.any(String)
-                            }
-                        ])
-                    }
-                })
-                expect(body.apis['GET /api/articles']).toMatchObject({
-                    description: expect.any(String),
-                    queries: expect.arrayContaining([expect.any(String)]),
-                    exampleResponse: {
-                        articles: expect.arrayContaining([
-                            {
-                                title: expect.any(String),
-                                topic: expect.any(String),
-                                author: expect.any(String),
-                                body: expect.any(String),
-                                created_at: expect.any(String),
-                                votes: expect.any(Number),
-                                comment_count: expect.any(Number)
-                            }
-                        ])
-                    }
-                })
-            })
+                expect(body).toEqual(expectedApiResponse)
         });
     });
 
@@ -120,5 +90,39 @@ describe('App', ()=>{
                 expect(error.msg).toBe('bad request')
             })
         });
+    });
+
+    describe('GET /api/articles', () => {
+        test('GET 200: should return an array of article objects with expected keys', () => {
+            return request(app)
+            .get('/api/articles')
+            .expect(200)
+            .then(({body}) => {
+                expect(body.articles).toBeInstanceOf(Array)
+                body.articles.forEach((article) => {
+                    expect(article).toMatchObject({
+                        author: expect.any(String),
+                        title: expect.any(String),
+                        article_id: expect.any(Number),
+                        topic: expect.any(String),
+                        created_at: expect.any(String),
+                        votes: expect.any(Number),
+                        article_img_url: expect.any(String),
+                        comment_count: expect.any(Number)
+                    })
+                    expect(article).not.toHaveProperty('body')
+                })
+            })
+        });
+        test('GET 200: articles should be sorted by date in descending order', () => {
+            return request(app)
+            .get('/api/articles')
+            .expect(200)
+            .then(({body}) => {
+                const { articles } = body
+                expect(articles).toBeSortedBy('created_at', {descending: true})
+                }
+        )})
+        })
     })
 })
