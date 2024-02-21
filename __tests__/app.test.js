@@ -34,7 +34,7 @@ describe('App', ()=>{
         });
     })
     describe('path not found', () => {
-        test('returns 404 for apth that doesn;t exist', () => {
+        test('GET 404: returns 404 for a path that does not exist', () => {
             return request(app)
             .get('/api/topicz')
             .expect(404)
@@ -124,5 +124,45 @@ describe('App', ()=>{
                 }
         )})
         })
+    })
+    describe('GET /api/articles/:article_id/comments', () => {
+        test('GET 200: should receive an array of all comment objects associated with an article_id', () => {
+            return request(app)
+            .get('/api/articles/1/comments')
+            .expect(200)
+            .then(({body}) => {
+                expect(body.comments).toBeInstanceOf(Array)
+                body.comments.forEach((comment) => {
+                    expect(comment).toMatchObject({
+                        comment_id: expect.any(Number),
+                        votes: expect.any(Number),
+                        created_at: expect.any(String),
+                        author: expect.any(String),
+                        body: expect.any(String),
+                        article_id: expect.any(Number)
+                    })
+
+                })
+            })
+        });
+        test('GET 200: comments should be sorted by created_at in descending order', () => {
+            return request(app)
+            .get('/api/articles/1/comments')
+            .expect(200)
+            .then(({body}) => {
+                const { comments } = body
+                expect(comments).toBeSortedBy('created_at', {descending: true})
+                }
+        )})
+        test('GET 404: should return 404 for non-existent article_id', () => {
+            return request(app)
+            .get('/api/articles/9999/comments')
+            .expect(404);
+        });
+        test('GET 400: should return 400 for invalid article_id', () => {
+            return request(app)
+            .get('/api/articles/not-a-number/comments')
+            .expect(400); 
+        });
     })
 })
