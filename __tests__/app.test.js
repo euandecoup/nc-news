@@ -139,7 +139,7 @@ describe('App', ()=>{
                         created_at: expect.any(String),
                         author: expect.any(String),
                         body: expect.any(String),
-                        article_id: expect.any(Number)
+                        article_id: 1
                     })
 
                 })
@@ -154,6 +154,15 @@ describe('App', ()=>{
                 expect(comments).toBeSortedBy('created_at', {descending: true})
                 }
         )})
+        test('GET 200: should return an empty array when article has no comments', () => {
+            return request(app)
+            .get('/api/articles/2/comments')
+            .expect(200)
+            .then(({body}) => {
+                expect(body.comments).toBeInstanceOf(Array)
+                expect(body.comments.length).toBe(0)
+            })
+        });
         test('GET 404: should return 404 for non-existent article_id', () => {
             return request(app)
             .get('/api/articles/9999/comments')
@@ -163,6 +172,36 @@ describe('App', ()=>{
             return request(app)
             .get('/api/articles/not-a-number/comments')
             .expect(400); 
+        });
+    })
+    describe('POST /api/articles/:article_id/comments', () => {
+        test('POST 201: should add a comment to an article', () => {
+            return request(app)
+            .post('/api/articles/1/comments')
+            .send({username: 'lurker', body: 'test body'})
+            .expect(201)
+            .then(({body}) => {
+                expect(body.comment).toMatchObject({
+                    article_id: 1,
+                    author: 'lurker',
+                    body: 'test body',
+                    comment_id: 19,
+                    created_at: expect.any(String),
+                    votes: 0
+                })
+            })
+        });
+        test('POST 400: should return 400 if no username provided', () => {
+            return request(app)
+            .post('/api/articles/1/comments')
+            .send({body: 'test body'})
+            .expect(400)
+        });
+        test('POST 400: should return 400 if no body provided', () => {
+            return request(app)
+            .post('/api/articles/1/comments')
+            .send({username: 'lurker'})
+            .expect(400)
         });
     })
 })
