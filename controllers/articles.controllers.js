@@ -1,4 +1,4 @@
-const { fetchArticleById, fetchAllArticles, fetchAllCommentsByArticleId, checkArticleExists } = require("../models/articles.models")
+const { fetchArticleById, fetchAllArticles, fetchAllCommentsByArticleId, checkArticleExists, updateArticleVotes } = require("../models/articles.models")
 
 function getArticleById(request, response, next) {
     const { article_id } = request.params
@@ -35,4 +35,23 @@ function getCommentsByArticleId(request, response, next) {
         })
 }
 
-module.exports = { getArticleById, getArticles, getCommentsByArticleId }
+
+function patchArticleById(request, response, next) {
+    const { article_id } = request.params
+    const { inc_votes } = request.body
+    if (!inc_votes) {
+        return response.status(400).send({msg: 'bad request'})
+    }
+    checkArticleExists(article_id)
+        .then(() => {
+            return updateArticleVotes(article_id, inc_votes)
+        })
+        .then((article) => {
+            response.status(200).send({article})
+        })
+        .catch((error) => {
+            next(error)
+        })
+}
+
+module.exports = { getArticleById, getArticles, getCommentsByArticleId, patchArticleById }

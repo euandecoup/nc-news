@@ -1,4 +1,6 @@
+const { checkArticleExists } = require("../models/articles.models");
 const { insertComment } = require("../models/comments.models");
+const { checkUsernameExists } = require("../models/users.models");
 
 function postComment(request, response, next) {
     const {article_id} = request.params
@@ -6,10 +8,18 @@ function postComment(request, response, next) {
     if (!username || !body) {
         return response.status(400).send({msg: 'bad request'})
     }
-    const newComment = {...request.body, article_id}
-    insertComment(newComment)
+    checkUsernameExists(username)
+        .then(() => {
+            return checkArticleExists(article_id)
+        })
+        .then(() => {
+            return insertComment(username, body, article_id)
+        })
         .then((comment) => {
             response.status(201).send({comment})
+        })
+        .catch((error) => {
+            next(error)
         })
 }
 

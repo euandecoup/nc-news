@@ -191,6 +191,23 @@ describe('App', ()=>{
                 })
             })
         });
+        test('POST 201: should ignore unnecessary properties', () => {
+            return request(app)
+            .post('/api/articles/1/comments') 
+            .send({username: 'lurker', body: 'test body', unnecessary: 'property'})
+            .expect(201)
+            .then(({body}) => {
+                expect(body.comment).toMatchObject({
+                    article_id: 1,
+                    author: 'lurker',
+                    body: 'test body',
+                    comment_id: 19,
+                    created_at: expect.any(String),
+                    votes: 0
+                })
+                expect(body.comment.unnecessary).toBeUndefined()
+            })
+        });
         test('POST 400: should return 400 if no username provided', () => {
             return request(app)
             .post('/api/articles/1/comments')
@@ -203,5 +220,56 @@ describe('App', ()=>{
             .send({username: 'lurker'})
             .expect(400)
         });
+        test('POST 400: should return 400 for invalid article_id', () => {
+            return request(app)
+            .post('/api/articles/not-an-id/comments')
+            .send({username: 'lurker', body: 'test body'})
+            .expect(400)
+        });
+        test('POST 404: should return 404 for non-existent article_id', () => {
+            return request(app)
+            .post('/api/articles/9999/comments')
+            .send({username: 'lurker', body: 'test body'})
+            .expect(404)
+        });
+        test('POST 404: should return 404 is username does not exist', () => {
+            return request(app)
+            .post('/api/articles/1/comments')
+            .send({username: 'nonexistentuser', body: 'test body'})
+            .expect(404)
+        });
+    })
+    describe('PATCH /api/articles/:article_id', () => {
+        test('PATCH 200: should update an article by article_id', () => {
+            return request(app)
+            .patch('/api/articles/1')
+            .send({ inc_votes: 1 })
+            .expect(200)
+            .then(({body}) => {
+                expect(body.article).toMatchObject({
+                    article_id: 1,
+                    votes: 101
+                })
+            })
+        });
+        test('PATCH 400: should return an error if no inc_votes is provided', () => {
+            return request(app)
+            .patch('/api/articles/1')
+            .send({})
+            .expect(400)
+            
+        });
+        test('PATCH 400: should return an error if invalid article_id is provided', () => {
+            return request(app)
+            .patch('/api/articles/not-a-number')
+            .send({ inc_votes: 1 })
+            .expect(400)
+        });
+        test('PATCH 404: should return 404 for non-existent article_id', () => {
+            return request(app)
+            .patch('/api/articles/9999')
+            .send({ inc_votes: 1 })
+            .expect(404)
+        })
     })
 })
