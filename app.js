@@ -26,6 +26,10 @@ app.patch('/api/articles/:article_id', patchArticleById)
 
 app.delete('/api/comments/:comment_id', deleteComment)
 
+app.all("/*", ((request, response, next)=>{
+    response.status(404).send({msg: 'path not found'})
+}))
+
 app.use((error, request, response, next) => {
     if (error.status && error.msg) {
         response.status(error.status)
@@ -39,9 +43,6 @@ app.use((error, request, response, next) => {
     } else next(error)
 })
 
-app.all("/*", ((request, response, next)=>{
-    response.status(404).send({msg: 'path not found'})
-}))
 
 app.use((error, request, response, next) => {
     console.log(error)
