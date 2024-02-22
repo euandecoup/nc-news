@@ -8,10 +8,7 @@ function postComment(request, response, next) {
     if (!username || !body) {
         return response.status(400).send({msg: 'bad request'})
     }
-    checkUsernameExists(username)
-        .then(() => {
-            return checkArticleExists(article_id)
-        })
+    Promise.all([checkUsernameExists(username), checkArticleExists(article_id)])
         .then(() => {
             return insertComment(username, body, article_id)
         })
