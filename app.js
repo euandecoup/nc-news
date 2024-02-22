@@ -3,7 +3,7 @@ const app = express()
 const { getTopics } = require('./controllers/topics.controllers')
 const { getApis } = require('./controllers/api.controllers')
 const { getArticleById, getArticles, getCommentsByArticleId, patchArticleById } = require('./controllers/articles.controllers')
-const { postComment } = require('./controllers/comments.controllers')
+const { postComment, deleteComment } = require('./controllers/comments.controllers')
 
 app.use(express.json())
 
@@ -20,6 +20,8 @@ app.get('/api/articles/:article_id/comments', getCommentsByArticleId)
 app.post('/api/articles/:article_id/comments', postComment)
 
 app.patch('/api/articles/:article_id', patchArticleById)
+
+app.delete('/api/comments/:comment_id', deleteComment)
 
 app.use((error, request, response, next) => {
     if (error.status && error.msg) {
