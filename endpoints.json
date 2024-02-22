@@ -116,5 +116,13 @@
           "https://www.golenbock.com/wp-content/uploads/2015/01/placeholder-user.png"
       }
     ]
+  },
+  "/api/articles?topic=:topic": {
+    "description": "should return an array of article objects filtered by topic when topic query is provided",
+    "queries": ["cats", "paper", "mitch"],
+    "exampleResponse": [{
+      "description": "Not dogs",
+      "slug": "cats"
+    }]
   }
 }
