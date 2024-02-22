@@ -10,4 +10,11 @@ function checkUsernameExists(username) {
         })
 }
 
-module.exports = {checkUsernameExists}
+function fetchAllUsers() {
+    return db.query(`SELECT * FROM users`)
+        .then(({rows}) => {
+            return rows
+        })
+}
+
+module.exports = {checkUsernameExists, fetchAllUsers}

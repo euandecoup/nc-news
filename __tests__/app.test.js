@@ -289,4 +289,27 @@ describe('App', ()=>{
             .expect(404)
         });
     })
+    describe('GET /api/users', () => {
+        test('GET 200: should return an array of users objects with expected keys', () => {
+            return request(app)
+            .get('/api/users')
+            .expect(200)
+            .then((response) => {
+                const users = response.body
+                expect(Array.isArray(users)).toBe(true)
+                users.forEach((user) => {
+                    expect(user).toMatchObject({
+                        username: expect.any(String),
+                        name: expect.any(String),
+                        avatar_url: expect.any(String)
+                    })
+                })
+            })
+        });
+        test('GET 404: should respond 404 when the endpoint does not exists', () => {
+            return request(app)
+            .get('/api/userz')
+            .expect(404) 
+        });
+    })
 })
