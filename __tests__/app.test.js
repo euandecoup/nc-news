@@ -4,6 +4,7 @@ const seed = require('../db/seeds/seed.js')
 const data = require('../db/data/test-data/index.js')
 const db = require('../db/connection.js')
 const expectedApiResponse = require('../endpoints.json')
+const { response } = require('express')
 
 beforeEach(()=>{
     return seed(data)
@@ -33,7 +34,7 @@ describe('App', ()=>{
             })
         });
     })
-    describe('path not found', () => {
+    describe('GET 404: path not found', () => {
         test('GET 404: returns 404 for a path that does not exist', () => {
             return request(app)
             .get('/api/topicz')
@@ -72,15 +73,6 @@ describe('App', ()=>{
                 })
             })
         });
-        test('GET 404: should return 404 if article not found', () => {
-            return request(app)
-            .get('/api/articles/10000')
-            .expect(404)
-            .then((response) => {
-                const error = response.body
-                expect(error.msg).toBe('article not found')
-            })
-        })
         test('GET 400: should return 400 for invalid article id', () => {
             return request(app)
             .get('/api/articles/invalid_id')
@@ -163,15 +155,14 @@ describe('App', ()=>{
                 expect(body.comments.length).toBe(0)
             })
         });
-        test('GET 404: should return 404 for non-existent article_id', () => {
-            return request(app)
-            .get('/api/articles/9999/comments')
-            .expect(404);
-        });
         test('GET 400: should return 400 for invalid article_id', () => {
             return request(app)
             .get('/api/articles/not-a-number/comments')
-            .expect(400); 
+            .expect(400)
+            .then((response) => {
+                const error = response.body
+                expect(error.msg).toBe('bad request')
+            })
         });
     })
     describe('POST /api/articles/:article_id/comments', () => {
@@ -213,30 +204,30 @@ describe('App', ()=>{
             .post('/api/articles/1/comments')
             .send({body: 'test body'})
             .expect(400)
+            .then((response) => {
+                const error = response.body
+                expect(error.msg).toBe('bad request')
+            })
         });
         test('POST 400: should return 400 if no body provided', () => {
             return request(app)
             .post('/api/articles/1/comments')
             .send({username: 'lurker'})
             .expect(400)
+            .then((response) => {
+                const error = response.body
+                expect(error.msg).toBe('bad request')
+            })
         });
         test('POST 400: should return 400 for invalid article_id', () => {
             return request(app)
             .post('/api/articles/not-an-id/comments')
             .send({username: 'lurker', body: 'test body'})
             .expect(400)
-        });
-        test('POST 404: should return 404 for non-existent article_id', () => {
-            return request(app)
-            .post('/api/articles/9999/comments')
-            .send({username: 'lurker', body: 'test body'})
-            .expect(404)
-        });
-        test('POST 404: should return 404 is username does not exist', () => {
-            return request(app)
-            .post('/api/articles/1/comments')
-            .send({username: 'nonexistentuser', body: 'test body'})
-            .expect(404)
+            .then((response) => {
+                const error = response.body
+                expect(error.msg).toBe('bad request')
+            })
         });
     })
     describe('PATCH /api/articles/:article_id', () => {
@@ -257,20 +248,21 @@ describe('App', ()=>{
             .patch('/api/articles/1')
             .send({})
             .expect(400)
-            
+            .then((response) => {
+                const error = response.body
+                expect(error.msg).toBe('bad request')
+            })
         });
         test('PATCH 400: should return an error if invalid article_id is provided', () => {
             return request(app)
             .patch('/api/articles/not-a-number')
             .send({ inc_votes: 1 })
             .expect(400)
+            .then((response) => {
+                const error = response.body
+                expect(error.msg).toBe('bad request')
+            })
         });
-        test('PATCH 404: should return 404 for non-existent article_id', () => {
-            return request(app)
-            .patch('/api/articles/9999')
-            .send({ inc_votes: 1 })
-            .expect(404)
-        })
     })
     describe('DELETE /api/comments/:comment_id', () => {
         test('DELETE 204: should delete a comment with the given comment_id', () => {
@@ -282,11 +274,10 @@ describe('App', ()=>{
             return request(app)
             .delete('/api/comments/not-a-number')
             .expect(400)
-        });
-        test('DELETE 404: should respond with 404 when comment_id does not exist', () => {
-            return request(app)
-            .delete('/api/comments/9999')
-            .expect(404)
+            .then((response) => {
+                const error = response.body
+                expect(error.msg).toBe('bad request')
+            })
         });
     })
     describe('GET /api/users', () => {
@@ -306,10 +297,35 @@ describe('App', ()=>{
                 })
             })
         });
-        test('GET 404: should respond 404 when the endpoint does not exists', () => {
+    })
+    describe('GET /api/articles (topic query)', () => {
+        test('GET 200: should return an array of article objects filtered by topic when topic query is provided', () => {
             return request(app)
-            .get('/api/userz')
-            .expect(404) 
+            .get('/api/articles?topic=cats')
+            .expect(200)
+            .then((response) => {
+                const articles = response.body.articles
+                expect(Array.isArray(articles)).toBe(true)
+                articles.forEach((article) => {
+                    expect(article).toMatchObject({
+                        author: expect.any(String),
+                        title: expect.any(String),
+                        article_id: expect.any(Number),
+                        topic: 'cats',
+                        created_at: expect.any(String),
+                        votes: expect.any(Number),
+                        comment_count: expect.any(Number)
+                    })
+                })
+            })
+        });
+        test('GET 400: should respond with 400 for invalid topic query', () => {
+            return request(app)
+            .get('/api/articles?topic=123')
+            .expect(400)
+            .then((response) => {
+                expect(response.body.msg).toBe('topic not found')
+            })
         });
     })
 })

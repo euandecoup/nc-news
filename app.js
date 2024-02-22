@@ -14,6 +14,8 @@ app.get('/api', getApis)
 
 app.get('/api/articles/:article_id', getArticleById)
 
+app.get('/api/articles?topic=:topic', getArticles)
+
 app.get('/api/articles', getArticles)
 
 app.get('/api/articles/:article_id/comments', getCommentsByArticleId)
@@ -43,6 +45,11 @@ app.use((error, request, response, next) => {
     } else next(error)
 })
 
+app.use((error, request, response, next) => {
+    if (error.code === '23502') {
+        response.status(400).send({msg: 'bad request'})
+    } else next(error)
+})
 
 app.use((error, request, response, next) => {
     console.log(error)
