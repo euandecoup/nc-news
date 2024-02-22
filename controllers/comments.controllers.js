@@ -1,5 +1,5 @@
 const { checkArticleExists } = require("../models/articles.models");
-const { insertComment } = require("../models/comments.models");
+const { insertComment, deleteCommentById } = require("../models/comments.models");
 const { checkUsernameExists } = require("../models/users.models");
 
 function postComment(request, response, next) {
@@ -23,4 +23,15 @@ function postComment(request, response, next) {
         })
 }
 
-module.exports = {postComment}
+function deleteComment(request, response, next) {
+    const { comment_id } = request.params
+    deleteCommentById(comment_id)
+        .then(() => {
+            response.status(204).send()
+        })
+        .catch((error) => {
+            next(error)
+        })
+}
+
+module.exports = {postComment, deleteComment}

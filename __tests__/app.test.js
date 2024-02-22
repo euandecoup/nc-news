@@ -272,4 +272,21 @@ describe('App', ()=>{
             .expect(404)
         })
     })
+    describe('DELETE /api/comments/:comment_id', () => {
+        test('DELETE 204: should delete a comment with the given comment_id', () => {
+            return request(app)
+            .delete('/api/comments/1')
+            .expect(204)
+        });
+        test('DELETE 400: should respond with 400 when comment_id is not a number', () => {
+            return request(app)
+            .delete('/api/comments/not-a-number')
+            .expect(400)
+        });
+        test('DELETE 404: should respond with 404 when comment_id does not exist', () => {
+            return request(app)
+            .delete('/api/comments/9999')
+            .expect(404)
+        });
+    })
 })
