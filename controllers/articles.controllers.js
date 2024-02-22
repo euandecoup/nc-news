@@ -14,18 +14,24 @@ function getArticleById(request, response, next) {
 
 function getArticles(request, response, next) {
     const { topic } = request.query
-    promises = [fetchAllArticles(topic)]
     if (topic) {
-        promises.push(checkTopicExists(topic))
-    }
-    Promise.all(promises)
-        .then((promisesResolved) => {
-            const articles = promisesResolved[0]
-            response.status(200)
+        checkTopicExists(topic)
+            .then(() => fetchAllArticles(topic))
+            .then((articles) => {
+                response.status(200)
             .send({articles})
-        }).catch((error) => {
-            next(error)
-        })
+            }).catch((error) => {
+                next(error)
+            })
+        } else {
+            fetchAllArticles()
+                .then((articles) => {
+                    response.status(200)
+                    .send({articles})
+                }).catch((error) => {
+                    next(error)
+                })
+    }
 }
 
 function getCommentsByArticleId(request, response, next) {

@@ -69,7 +69,8 @@ describe('App', ()=>{
                     topic: 'mitch',
                     created_at: expect.any(String),
                     votes: 100,
-                    article_img_url: expect.any(String)
+                    article_img_url: expect.any(String),
+                    comment_count: expect.any(Number)
                 })
             })
         });
@@ -306,6 +307,7 @@ describe('App', ()=>{
             .then((response) => {
                 const articles = response.body.articles
                 expect(Array.isArray(articles)).toBe(true)
+                expect(articles.length).toBe(1)
                 articles.forEach((article) => {
                     expect(article).toMatchObject({
                         author: expect.any(String),
@@ -317,6 +319,16 @@ describe('App', ()=>{
                         comment_count: expect.any(Number)
                     })
                 })
+            })
+        });
+        test('GET 200: should return an empty array when valid topic is queried but no articles exist on given topic', () => {
+            return request(app)
+            .get('/api/articles?topic=paper')
+            .expect(200)
+            .then((response) => {
+                const articles = response.body.articles
+                expect(Array.isArray(articles)).toBe(true)
+                expect(articles.length).toBe(0)
             })
         });
         test('GET 400: should respond with 400 for invalid topic query', () => {
