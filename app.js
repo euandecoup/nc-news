@@ -52,6 +52,12 @@ app.use((error, request, response, next) => {
 })
 
 app.use((error, request, response, next) => {
+    if (error.code === '42601') {
+        response.status(400).send({msg: 'invalid order query'})
+    } else next(error)
+})
+
+app.use((error, request, response, next) => {
     console.log(error)
     response.status(500).send({msg: 'internal server error'})
 })

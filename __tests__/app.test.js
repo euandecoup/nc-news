@@ -126,6 +126,42 @@ describe('App', ()=>{
                 }
         )})
         })
+        test('GET 200: articles should be sorted by created_at in descending order as default', () => {
+            return request(app)
+            .get('/api/articles')
+            .expect(200)
+            .then(({body}) => {
+                const {articles} = body
+                expect(articles).toBeSortedBy('created_at', {descending: true})
+            })
+        });
+        test('GET 200: articles should be sorted by a valid column in ascending order', () => {
+            return request(app)
+            .get('/api/articles?sort_by=title&order=asc')
+            .expect(200)
+            .then(({body}) => {
+                const {articles} = body
+                expect(articles).toBeSortedBy('title', {ascending: true})
+            })
+        });
+        test('GET 400: should return 400 when an invalid sort_by column is given', () => {
+            return request(app)
+            .get('/api/articles?sort_by=invalid_column')
+            .expect(400)
+            .then((response) => {
+                const error = response.body
+                expect(error.msg).toBe('invalid sort query') 
+            })
+        });
+        test('GET 400: should return 400 when an invalid order is given', () => {
+            return request(app)
+            .get('/api/articles?order=invalid_order')
+            .expect(400)
+            .then((response) => {
+                const error = response.body
+                expect(error.msg).toBe('invalid order query') 
+            })
+        });
     })
     describe('GET /api/articles/:article_id/comments', () => {
         test('GET 200: should receive an array of all comment objects associated with an article_id', () => {

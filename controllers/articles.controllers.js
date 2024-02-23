@@ -13,10 +13,10 @@ function getArticleById(request, response, next) {
 }
 
 function getArticles(request, response, next) {
-    const { topic } = request.query
+    const { topic, sort_by, order } = request.query
     if (topic) {
         checkTopicExists(topic)
-            .then(() => fetchAllArticles(topic))
+            .then(() => fetchAllArticles(topic, sort_by, order))
             .then((articles) => {
                 response.status(200)
             .send({articles})
@@ -24,7 +24,7 @@ function getArticles(request, response, next) {
                 next(error)
             })
         } else {
-            fetchAllArticles()
+            fetchAllArticles(undefined, sort_by, order)
                 .then((articles) => {
                     response.status(200)
                     .send({articles})

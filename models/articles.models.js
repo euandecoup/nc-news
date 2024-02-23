@@ -17,19 +17,23 @@ function fetchArticleById(id) {
         })
 }
 
-function fetchAllArticles(topic) {
+function fetchAllArticles(topic, sort_by = 'created_at', order = 'DESC') {
+    const validSortBys = ['author', 'title', 'article_id', 'topic', 'created_at', 'votes', 'article_img_url', 'comment_count']
     let queryString = `SELECT articles.author, articles.title, articles.article_id, articles.topic, articles.created_at, articles.votes, articles.article_img_url, 
     COUNT(comments.comment_id) AS comment_count 
     FROM articles
     LEFT JOIN comments 
     ON articles.article_id = comments.article_id`
     let queryValues = []
+    if (!validSortBys.includes(sort_by)) {
+        return Promise.reject({status: 400, msg: 'invalid sort query'})
+    }
     if (topic) {
         queryString += ` WHERE articles.topic = $1`
         queryValues.push(topic)
     }
-    queryString += ` GROUP BY articles.article_id
-    ORDER BY articles.created_at DESC`
+    queryString += ` GROUP BY articles.article_id`
+    queryString += ` ORDER BY articles.${sort_by} ${order}`
 
     return db.query(queryString, queryValues)
         .then(({rows}) => {
