@@ -69,8 +69,17 @@ describe('App', ()=>{
                     topic: 'mitch',
                     created_at: expect.any(String),
                     votes: 100,
-                    article_img_url: expect.any(String),
-                    comment_count: expect.any(Number)
+                    article_img_url: expect.any(String)
+                })
+            })
+        });
+        test('GET 200: additional feature of comment_count property should be present on returned article objects', () => {
+            return request(app)
+            .get('/api/articles/1')
+            .expect(200)
+            .then(({body}) => {
+                expect(body.article).toMatchObject({
+                    comment_count: expect.any(Number)                    
                 })
             })
         });
