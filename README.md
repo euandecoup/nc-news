@@ -8,7 +8,7 @@ The database is PSQL, and interactions with the database will be handled via nod
 
 ## Live Demo
 
-You can access the live demo of the project [here](https://nc-news-8had.onrender.com/api).
+You can access the live demo of the project [here](https://nc-news-8had.onrender.com).
 
 ## Getting Started
 
