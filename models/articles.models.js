@@ -33,7 +33,12 @@ function fetchAllArticles(topic, sort_by = 'created_at', order = 'DESC') {
         queryValues.push(topic)
     }
     queryString += ` GROUP BY articles.article_id`
-    queryString += ` ORDER BY articles.${sort_by} ${order}`
+
+    if (sort_by === 'comment_count') {
+        queryString += ` ORDER BY comment_count ${order}`
+    } else {
+        queryString += ` ORDER BY articles.${sort_by} ${order}`
+    }
 
     return db.query(queryString, queryValues)
         .then(({rows}) => {
